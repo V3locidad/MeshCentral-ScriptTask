@@ -357,18 +357,32 @@ function selectPreviouslySelectedScript() {
 
 function goRun() {
     var selScript = document.querySelectorAll('.liselected');
-    if (selScript.length) {
-      var scriptId = selScript[0].getAttribute('x-data-id');
-      if (scriptId == selScript[0].getAttribute('x-folder-id'))
-      {
-          parent.setDialogMode(2, "Oops!", 1, null, 'Please select a script. A folder is currently selected.'); 
-      }
-      else {
-          parent.meshserver.send({ 'action': 'plugin', 'plugin': 'scripttask', 'pluginaction': 'runScript', 'scriptId': scriptId, 'nodes': [ parent.currentNode._id ], 'currentNodeId': parent.currentNode._id });
-      }
-    } else {
-        parent.setDialogMode(2, "Oops!", 1, null, 'No script has been selected to run on the machines.'); 
+
+    if (!selScript.length) {
+        parent.setDialogMode(2, "Oops!", 1, null, "No script selected.");
+        return;
     }
+
+    var scriptId = selScript[0].getAttribute('x-data-id');
+    var cboxes = document.querySelectorAll('input[name="runOn[]"]:checked');
+    var nodes = [];
+
+    cboxes.forEach((n) => {
+        nodes.push(n.value);
+    });
+    
+    if (nodes.length === 0) {
+        nodes = [parent.currentNode._id];
+    }
+
+    parent.meshserver.send({
+        action: "plugin",
+        plugin: "scripttask",
+        pluginaction: "runScript",
+        scriptId: scriptId,
+        nodes: nodes,
+        currentNodeId: parent.currentNode._id
+    });
 }
 
 function goEdit() {
@@ -1020,3 +1034,4 @@ function redrawScriptTree() {
   
 </script>
 </html>
+
